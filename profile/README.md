@@ -38,7 +38,7 @@
 
 | Student ID | Name | Learning Path | Focus Area |
 | :--- | :--- | :--- | :--- |
-| DS005B6X1386 | Noreencia Beatrice | Data Science Specialist | Data analysis and dataset finalization |
+| DS005B6X1386 | Noreencia Beatrice | Data Science Specialist | Data analysis and Project manager |
 | DS009B6Y0668 | Ghiyyas Abiyasha Winardi | Data Science Specialist | Data preparation and processing |
 | AE009B6Y1064 | Muhamad Fazrin Nugraha | Next-Gen AI Engineer | Model development and AI service integration |
 | AE620B6X1333 | Nasywa Salsabiila Romadhona | Next-Gen AI Engineer | AI strategy and feature planning |
