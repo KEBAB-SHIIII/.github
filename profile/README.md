@@ -4,10 +4,6 @@
   <h1>Mumtaz Attendance &amp; Learning Progress System</h1>
 
   <p>
-    <strong>Digitizing tutoring attendance, AI-assisted session validation, tiered billing &amp; payroll, and student learning progress for Bimbel Mumtaz Sampit.</strong>
-  </p>
-
-  <p>
     <a href="https://your-demo-url.example.com/">
       <img src="https://img.shields.io/badge/View%20Demo-1D4ED8?style=for-the-badge&logo=vercel&logoColor=white" alt="View Demo" />
     </a>
@@ -19,8 +15,6 @@
     </a>
   </p>
 </div>
-
----
 
 ## About The Project
 
