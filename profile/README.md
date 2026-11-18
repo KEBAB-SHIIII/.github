@@ -24,9 +24,18 @@
 
 ## About The Project
 
-In daily tutoring operations at **Bimbel Mumtaz Sampit**, managing session attendance across tutors, students, and grade levels (`PAUD–TK` through `SMA`) is critical for accurate billing, tutor payroll, and parent communication. Previously, tutors logged sessions through disconnected Google Forms and Admins had to manually group spreadsheet rows every month to verify entries, spot duplicate or out-of-policy submissions, compute tiered tuition fees and tutor honor, and share learning progress—resulting in repetitive administrative overhead, delayed verification, and limited visibility for parents.
+At **Bimbel Mumtaz Sampit**, every tutoring session needs to be recorded properly. These records decide how much parents are billed, how much each tutor is paid, and what parents can see about their child's progress. Until now, tutors reported their sessions through Google Forms, and the admin had to go through the spreadsheet by hand at the end of every month. They checked each entry, looked for duplicates or mistakes, and calculated fees and tutor pay. This took a lot of time, errors were easy to miss, and parents had little visibility into what their children were learning.
 
-To solve this, we built **Mumtaz Attendance & Learning Progress System**, a centralized, role-based web platform (**Admin**, **Tutor**, and **Parent/Guardian**) powered by **Neon PostgreSQL** as the single source of truth and an independent **FastAPI Machine Learning** service. Tutors log structured sessions (1–5 subjects, schedule, duration, and learning notes) in seconds; every submission is automatically screened for anomalies before Admin approval; verified sessions lock tiered tuition billing and tutor honor snapshots; Admins generate PDF invoices and trigger on-demand 8-column Google Sheets monthly exports; and Parents securely track approved learning histories using a secret Parent Access Code.
+**Mumtaz Attendance & Learning Progress System** is a web application that replaces this manual process. Tutors fill in a short form after each lesson. The system checks every entry automatically and flags anything that looks wrong, so the admin only reviews what needs attention. Approved sessions are counted toward tuition bills and tutor pay. Admins can print invoices and export monthly reports to Google Sheets. Parents can follow their child's learning history at any time.
+
+| Who | How This Project Helps |
+| :--- | :--- |
+| **Admin** | Reviews flagged sessions, manages tutor, student, parent, and subject data, sees monthly summaries and tutor pay, prints invoices, and exports monthly reports to Google Sheets. |
+| **Tutor** | Records each lesson quickly (subjects, time, duration, materials, and notes), fixes entries that need correction, and sees their estimated monthly pay. |
+| **Parent / Guardian** | Logs in with a private access code (no password needed) to see approved lessons, materials, and learning notes for their child. |
+
+**Main benefits:** less manual recap work, fewer mistakes in billing and tutor pay, faster and more consistent checking of attendance, and clearer information for parents.
+
 
 | Role | Route | Core Capabilities |
 | :--- | :--- | :--- |
@@ -36,9 +45,38 @@ To solve this, we built **Mumtaz Attendance & Learning Progress System**, a cent
 
 ### AI-Assisted Attendance Screening
 
-To reduce manual checking while keeping data accurate, every submitted or revised session passes through a **FastAPI Machine Learning & Business Guardrail** service. In general, this AI layer acts as an intelligent screening assistant that automatically checks incoming attendance logs against historical session patterns and operational rules—helping Admins spot potential **duplicate entries**, **overlapping tutor or student schedules**, and **unusual session durations or start times** (`30–180` minutes within `07:00–21:00` WIB).
+Every time a tutor submits or corrects a session, the system automatically checks it against the center's rules and against earlier sessions of the same tutor or the same student, within 30 days of the lesson date. This helps the admin spot sessions that may be duplicated, overlapping, or outside normal hours or length, without checking every entry by hand. Admins can change any result at any time, and sessions are still saved if the checker is unavailable.
 
-Rather than replacing human judgment, the AI service provides clear, explainable review labels (`Valid`, `Needs Revision`, or `Rejected`) while strictly protecting private learning notes. Admins always hold the final decision to approve, request revision, or reject any session, and tutor submissions are never blocked even if the AI service is temporarily unavailable.
+
+**Flow:** Tutor submits → System checks → Valid / Revision / Reject → Admin reviews flagged sessions → Tutor fixes and resubmits (if Revision)
+
+**Screening results**
+
+| Result | When | What Happens |
+| :--- | :--- | :--- |
+| **Valid** | Meets all the rules | Approved automatically and counted toward billing and tutor pay |
+| **Revision** | Breaks one or more rules below | On hold. Tutor can edit it, and the admin decides whether to approve |
+| **Reject** | Exact copy of a session submitted earlier | On hold. Tutor cannot edit it, and the admin can delete it |
+
+If rules from more than one group are broken, the priority is Reject, then Revision, then Valid.
+
+**Screening rules**
+
+| Rule | What Is Checked | Result |
+| :--- | :--- | :--- |
+| **Exact duplicate** | Same tutor, student, subjects, date, start time, and duration as an earlier session | Reject |
+| **Similar duplicate** | Same as above, but with a different start time | Revision |
+| **Too long** | Lesson lasts more than 180 minutes | Revision |
+| **Too short** | Lesson lasts less than 30 minutes | Revision |
+| **Starts too late** | Lesson starts after 21:00 (WIB) | Revision |
+| **Starts too early** | Lesson starts before 07:00 (WIB) | Revision |
+| **Tutor double-booked** | Same tutor, different student, overlapping time on the same day | Revision |
+| **Student double-booked** | Same student, different tutor, overlapping time on the same day | Revision |
+| **Same pair overlapping** | Same tutor and student, overlapping time on the same day, but not an exact copy | Revision |
+
+Exactly 30 or 180 minutes, and starting exactly at 07:00 or 21:00, are still valid. Duplicate and overlap checks only look at sessions on the same date. When two sessions clash, the one submitted first is still judged on its own, and only the one submitted later is flagged.
+
+
 
 ---
 
@@ -56,13 +94,14 @@ Rather than replacing human judgment, the AI service provides clear, explainable
 
 ## Project Scope
 
-| Designed To | Intentionally Does Not |
+| What This Project Does | What This Project Does Not Do |
 | :--- | :--- |
-| Store all operational attendance logs, master data, audit trails, and locked tariff/honor snapshots in **Neon PostgreSQL** as the single source of truth | Use Google Sheets as a primary database, routine input form, or two-way sync source (strictly export-only on Admin trigger) |
-| Provide dedicated role-based dashboards (`/admin`, `/tutor`, `/orang-tua-murid`) with HttpOnly cookies, Argon2id password hashing, and CSRF protection | Send private learning materials, notes, or raw personal credentials to the AI anomaly service |
-| Support structured session logging (1–5 subjects per session, auto-filled student grade/school metadata, learning material, notes, and next focus) | Lock Admins out of overriding AI classifications or silently drop attendance submissions when the AI service is unreachable |
-| Screen every submitted &amp; revised session via FastAPI ML + Guardrail to flag duplicates, schedule overlaps, and out-of-policy hours or durations | Auto-approve sessions, reject records, or alter tutor honor without Admin confirmation |
-| Calculate tiered billing &amp; honor snapshots (`PAUD–TK` to `SMA`) for approved sessions, generate PDF invoices, and export 8-column monthly sheets (`Absensi YYYY-MM`) | Process bank transfers, online payment gateways, online exams, or act as a full academic LMS |
+| Keeps all attendance records, student and tutor data, and billing and pay calculations in one secure database | Use Google Sheets as the main database or for data entry. It is only used to export monthly reports |
+| Gives Admins, Tutors, and Parents their own pages, each showing only the information they are allowed to see | Share private lesson notes or login details with the AI checker |
+| Lets tutors record lessons quickly, with student grade and school filled in automatically | Block admins from changing the AI's result, or lose a tutor's submission when the AI checker is unavailable |
+| Checks every submitted or corrected session automatically for duplicates, schedule clashes, and unusual lesson hours or lengths | Count flagged sessions toward billing or tutor pay before the admin approves them |
+| Calculates tuition bills and tutor pay by grade level, creates PDF invoices, and exports monthly reports to Google Sheets | Handle bank transfers or online payments, or work as a full online learning platform |
+
 
 ---
 
