@@ -34,7 +34,20 @@
 | **Tutor** | Record lessons quickly, fix entries that need correction, see estimated monthly pay |
 | **Parent** | Log in with a private access code to see approved lessons and learning notes |
 
-### AI-Assisted Attendance Screening
+## Contributors
+
+| Student ID | Name | Learning Path | Focus Area |
+| :--- | :--- | :--- | :--- |
+| DS005B6X1386 | Noreencia Beatrice | Data Science Specialist | Data analysis and dataset finalization |
+| DS009B6Y0668 | Ghiyyas Abiyasha Winardi | Data Science Specialist | Data preparation and processing |
+| AE009B6Y1064 | Muhamad Fazrin Nugraha | Next-Gen AI Engineer | Model development and AI service integration |
+| AE620B6X1333 | Nasywa Salsabiila Romadhona | Next-Gen AI Engineer | AI strategy and feature planning |
+| FS009B6Y0568 | Farhan Harits Prakoso | AI Full-Stack Developer | Backend, database, and AI integration |
+| FS126B6Y1508 | Rama Dwi Nugraha | AI Full-Stack Developer | Frontend and UI/UX |
+
+
+
+## AI-Assisted Attendance Screening
 
 Each submitted or corrected session is checked automatically against the center's rules and the same tutor's or student's sessions within 30 days. This helps the admin spot duplicates, schedule clashes, and unusual hours or lengths. Admins can change any result, and sessions are still saved if the checker is unavailable.
 
